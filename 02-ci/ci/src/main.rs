@@ -7,7 +7,7 @@ async fn main() -> eyre::Result<()> {
     let client = dagger_sdk::connect().await?;
 
     let src = client.host().directory_opts(
-        "cross-compile-musl/",
+        "musl/cross-compile-musl/",
         HostDirectoryOptsBuilder::default()
             .include(vec!["**/Cargo.toml", "**/Cargo.lock", "**/*.rs", ".cargo/"])
             .build()?,
