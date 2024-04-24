@@ -1,0 +1,18 @@
+[package]
+name = "sample-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.82"
+axum = "0.7.5"
+clap = { version = "4.5.4", features = ["derive", "env"] }
+git2 = "0.18.3"
+reqwest = { version = "0.12.4", features = ["json"] }
+serde = { version = "1.0.198", features = ["derive"] }
+serde_json = "1.0.116"
+tokio = { version = "1.37.0", features = ["full"] }
+tracing = { version = "0.1.40", features = ["log"] }
+tracing-subscriber = "0.3.18"
+
+
