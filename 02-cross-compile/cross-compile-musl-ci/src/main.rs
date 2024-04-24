@@ -16,18 +16,41 @@ async fn main() -> eyre::Result<()> {
     let sample_app = client
         .container()
         .from("rust:1.77-bookworm")
+        .with_exec(vec!["apt", "update", "-y"])
+        .with_exec(vec![
+            "apt",
+            "install",
+            "-y",
+            "musl-tools",
+            "pkg-config",
+            "build-essential",
+            "cmake",
+            "clang",
+            "lld",
+        ])
+        .with_exec(vec![
+            "rustup",
+            "target",
+            "add",
+            "armv7-unknown-linux-musleabihf",
+        ])
         .with_workdir("/mnt/src")
         .with_directory(".", src)
-        .with_exec(vec!["cargo", "build", "--release"])
-        .with_exec(vec!["./target/release/cross-compile", "-h"])
-        .file("target/release/cross-compile");
+        .with_exec(vec![
+            "cargo",
+            "build",
+            "--release",
+            "--target=armv7-unknown-linux-musleabihf",
+        ])
+        .with_exec(vec![
+            "./target/armv7-unknown-linux-musleabihf/release/cross-compile",
+            "-h",
+        ])
+        .file("target/armv7-unknown-linux-musleabihf/release/cross-compile");
 
     let final_image = client
         .container()
-        // .from("alpine:latest")
-        // .with_exec(vec!["apk", "add", "libc-utils"])
         .with_file("/usr/local/bin/cross-compile", sample_app)
-        // .with_exec(vec!["ldd", "/usr/local/bin/cross-compile"])
         .with_exec(vec!["cross-compile", "-h"])
         .with_entrypoint(vec!["cross-compile"]);
 
@@ -35,6 +58,13 @@ async fn main() -> eyre::Result<()> {
     // final_image.publish("kasperhermansen/building-rust-for-production:cross-compile-cross-compile").await?;
 
     let output = final_image.with_exec(vec!["-h"]).stdout().await?;
+
+    println!(
+        "sample app in linux using a fully statically compiled app: \n{}",
+        output
+    );
+
+    let output = final_image.with_exec(vec!["bench"]).stdout().await?;
 
     println!(
         "sample app in linux using a fully statically compiled app: \n{}",
